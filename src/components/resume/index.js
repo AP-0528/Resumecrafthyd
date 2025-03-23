@@ -7,13 +7,18 @@ import Experience from './Experience';
 import Skill from './Skill';
 import Contact from './Contact';
 
-const ResumeContainer = styled.div`
+// Enhanced for better ATS parsing with semantic HTML
+const ResumeContainer = styled.article`
 	margin-left: auto;
 	margin-right: auto;
 	width: 595px;
 	padding: 60px 0px;
 	border: 2px solid #f2eeff;
-	background: white
+	background: white;
+	
+	/* Ensure text is easily selectable/parseable */
+	-webkit-user-select: text;
+	user-select: text;
 `;
 
 const InnerContainer = styled.div`
@@ -22,58 +27,89 @@ const InnerContainer = styled.div`
 	margin-right: auto;
 `;
 
-const Name = styled.h2`
+const Name = styled.h1`
 	font-weight: bold;
 	font-size: 20px;
 	letter-spacing: -0.04em;
-	color: #46464b;
+	color: #000; /* Ensure high contrast for ATS */
 `;
 
-const Role = styled(P)`
-margin-top: 2px;
-font-size: 14px;
-letter-spacing: -0.03em;
-color: ${(props) => props.theme.gray.dark}
+const Role = styled.h2`
+	margin-top: 2px;
+	font-size: 14px;
+	letter-spacing: -0.03em;
+	color: #333; /* Better contrast */
 `;
 
-const Summary = styled(P)`
-letter-spacing: -0.02em;
-font-size: 16px;
-color: ${(props) => props.theme.gray.darker};
-margin-top: 30px;
-line-height: 1.38;
-font-weight: 400;
+const Summary = styled.p`
+	letter-spacing: -0.02em;
+	font-size: 16px;
+	color: #222; /* Darker for better contrast */
+	margin-top: 30px;
+	line-height: 1.38;
+	font-weight: 400;
 `;
 
 const Wrapper = styled.div`margin-top: 45px;`;
 
-const Title = styled.h3`
+// Use more standard section names for better ATS parsing
+const SectionTitle = styled.h3`
 	font-weight: bold;
 	letter-spacing: -0.03em;
-	color: ${(props) => props.theme.primary.normal};
-	font-size: 12px;
+	color: #000; /* High contrast for section headings */
+	font-size: 14px;
 	text-transform: uppercase;
 	margin-bottom: 30px;
 `;
 
-const Skills = styled.ul`list-style-type: none;`;
+// Use semantic HTML lists for better ATS parsing
+const Skills = styled.ul`
+	list-style-type: disc; /* Explicit bullet points for better parsing */
+	padding-left: 20px;
+`;
 
 const NoContent = styled.div`color: ${(props) => props.theme.gray.normal};`;
 
+// Experience section with proper list formatting
+const ExperiencesList = styled.div`
+	/* Structured for better parsing */
+`;
+
 const Resume = (props) => {
 	const resume = props.resume;
-	console.log(resume);
+	
 	return (
 		<ResumeContainer>
+			{/* Hidden structured data for ATS */}
+			<div itemScope itemType="http://schema.org/Person" style={{ display: 'none' }}>
+				<span itemProp="givenName">{resume.firstName}</span>
+				<span itemProp="familyName">{resume.lastName}</span>
+				<span itemProp="jobTitle">{resume.job}</span>
+				{resume.email && <span itemProp="email">{resume.email}</span>}
+				{resume.website && <span itemProp="url">{resume.website}</span>}
+				{resume.city && resume.state && (
+					<div itemProp="address" itemScope itemType="http://schema.org/PostalAddress">
+						<span itemProp="addressLocality">{resume.city}</span>,
+						<span itemProp="addressRegion">{resume.state}</span>
+					</div>
+				)}
+				
+				{resume.skills && resume.skills.length > 0 && (
+					<div itemProp="knowsAbout">
+						{resume.skills.join(', ')}
+					</div>
+				)}
+			</div>
+		
 			<InnerContainer>
-				<div className="header row">
+				<header className="header row">
 					<div className="col-7 basic-info">
 						<Name>
-							{resume.firstName || ' firstName'} {resume.lastName || 'lastName'}
+							{resume.firstName || 'FirstName'} {resume.lastName || 'LastName'}
 						</Name>
 						<Role>{resume.job || 'Enter your job title'}</Role>
 						<Summary>
-							{resume.summary ||
+							{resume.professionalSummary || resume.summary ||
 								'Enter a powerful summary to describe your overall experience and skills.'}
 						</Summary>
 					</div>
@@ -81,37 +117,43 @@ const Resume = (props) => {
 					<div className="col-4 offset-1 contact-info" style={{ marginTop: '5px' }}>
 						<Contact 
 							text={`${resume.city || 'City'}, ${resume.state || 'State'}`}
+							aria-label="Location"
 						/>
-						<Contact text={resume.email || 'Your email'} />
-						{resume.website ? <Contact text={resume.website} /> : null}
+						<Contact 
+							text={resume.email || 'Your email'} 
+							aria-label="Email"
+						/>
+						{resume.website ? <Contact text={resume.website} aria-label="Website" /> : null}
 					</div>
-				</div>
+				</header>
 
 				<Wrapper>
 					<div className="row">
-						<div className="col-7 experiences">
-							<Title>Experience</Title>
-							{resume.experiences ? (
-								resume.experiences.map((experience) => {
-									return <Experience experience={experience} />;
-								})
-							) : (
-								<NoContent>You haven't added any experience yet</NoContent>
-							)}
-						</div>
+						<section className="col-7 experiences">
+							<SectionTitle>Work Experience</SectionTitle>
+							<ExperiencesList>
+								{resume.experiences && resume.experiences.length > 0 ? (
+									resume.experiences.map((experience, index) => {
+										return <Experience key={index} experience={experience} />;
+									})
+								) : (
+									<NoContent>You haven't added any experience yet</NoContent>
+								)}
+							</ExperiencesList>
+						</section>
 
-						<div className="col-4 offset-1 skills">
-							<Title>Skills</Title>
+						<section className="col-4 offset-1 skills">
+							<SectionTitle>Skills</SectionTitle>
 							<div>
 								<Skills>
-									{resume.skills ? (
-										resume.skills.map((skill) => <Skill skill={skill} />)
+									{resume.skills && resume.skills.length > 0 ? (
+										resume.skills.map((skill, index) => <Skill key={index} skill={skill} />)
 									) : (
 										<NoContent>You haven't added any skill yet</NoContent>
 									)}
 								</Skills>
 							</div>
-						</div>
+						</section>
 					</div>
 				</Wrapper>
 			</InnerContainer>

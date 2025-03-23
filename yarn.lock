@@ -9442,7 +9442,7 @@ react-dev-utils@^11.0.1:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@*, "react-dom@^16.8.0 || ^17", "react-dom@^16.8.2 || ^17.0.0", react-dom@^17.0.1, "react-dom@>= 16.8.0":
+react-dom@*, "react-dom@^16.8.0 || ^17", "react-dom@^16.8.2 || ^17.0.0", "react-dom@^17.0.0 || ^18.0.0 || ^19.0.0", react-dom@^17.0.1, "react-dom@>= 16.8.0":
   version "17.0.1"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-17.0.1.tgz"
   integrity sha512-6eV150oJZ9U2t9svnsspTMrWNyHc6chX0KzDeAOXftRa8bNeOKTTfCJ7KorIwenkHd2xqVTBTCZd79yk/lx/Ug==
@@ -9584,7 +9584,12 @@ react-step-builder@^2.0.4:
   resolved "https://registry.npmjs.org/react-step-builder/-/react-step-builder-2.0.4.tgz"
   integrity sha512-TRgLIL4q4zWAm422DyCropiW3hezmep5Bz3xF4doT/8V+7jvIWqBVhQmtcVItrqAYRc4I4D63xSi6Gd1XS42oQ==
 
-react@*, "react@^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0", "react@^16.8.0 || ^17", "react@^16.8.2 || ^17.0.0", react@^17.0.1, "react@>= 16.8.0", react@>=15, react@17.0.1:
+react-text-to-speech@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.npmjs.org/react-text-to-speech/-/react-text-to-speech-1.4.2.tgz"
+  integrity sha512-ORFNFbneTQnPXqvsTe0FN9X13nkao3el7nkMcLTkfqpjRZQWINjYTQyINPuFO0s/t6mw2rcRYAJjETljIL4uCA==
+
+react@*, "react@^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0", "react@^16.8.0 || ^17", "react@^16.8.2 || ^17.0.0", "react@^17.0.0 || ^18.0.0 || ^19.0.0", react@^17.0.1, "react@>= 16.8.0", react@>=15, react@17.0.1:
   version "17.0.1"
   resolved "https://registry.npmjs.org/react/-/react-17.0.1.tgz"
   integrity sha512-lG9c9UuMHdcAexXtigOZLX8exLWkW0Ku29qPRU8uhF2R9BN96dLCt0psvzPLlHc5OWkgymP3qwTRgbnw5BKx3w==

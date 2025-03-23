@@ -9,6 +9,7 @@ import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 
 import './modal.css';
+import { suggestAchievements } from '../../../services/aiSuggestions';
 
 const ModalContent = styled.div`margin-top: 35px;`;
 
@@ -25,6 +26,65 @@ const SmallInput = styled(Input)`
 	padding: 14px 15px;
 `;
 
+const AISectionTitle = styled.h3`
+  font-size: 18px;
+  margin: 15px 0;
+  color: ${props => props.theme.primary.normal};
+  display: flex;
+  align-items: center;
+`;
+
+const AIIcon = styled.span`
+  margin-right: 10px;
+  font-size: 18px;
+`;
+
+const SuggestionCard = styled.div`
+  background: white;
+  border: 1px solid ${props => props.theme.gray.lighter};
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+  
+  &:hover {
+    border-color: ${props => props.theme.primary.light};
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background-color: #f9f9f9;
+  }
+  
+  &:active {
+    background-color: #f0f0f0;
+    transform: translateY(1px);
+  }
+`;
+
+const AIButton = styled.button`
+  background-color: ${props => props.theme.primary.normal};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  
+  &:hover {
+    background-color: ${props => props.theme.primary.dark};
+  }
+  
+  &:disabled {
+    background-color: ${props => props.theme.gray.light};
+    cursor: not-allowed;
+  }
+`;
+
 const ExperienceModal = (props) => {
 	const [ formState, setFormState ] = useState({
 		title: '',
@@ -34,6 +94,9 @@ const ExperienceModal = (props) => {
 		description: '',
 		current: false
 	});
+	
+	const [suggestions, setSuggestions] = useState([]);
+	const [isGenerating, setIsGenerating] = useState(false);
 
 	const handleChange = (e) => {
 		if (e.target.type === 'checkbox') {
@@ -76,19 +139,59 @@ const ExperienceModal = (props) => {
 			description: '',
 			current: false
 		});
+		
+		// Clear suggestions
+		setSuggestions([]);
+	};
+	
+	const generateAchievements = (e) => {
+	  if (e) e.preventDefault();
+	  if (!formState.title) return;
+	  
+	  setIsGenerating(true);
+	  
+	  // Generate achievement suggestions using the AI service
+	  setTimeout(() => {
+	    const achievementSuggestions = suggestAchievements(formState.title);
+	    setSuggestions(achievementSuggestions);
+	    setIsGenerating(false);
+	  }, 800);
+	};
+	
+	const applySuggestion = (suggestion, index) => {
+	  const currentDescription = formState.description || '';
+	  const newDescription = currentDescription 
+	    ? `${currentDescription}\n\n• ${suggestion}`
+	    : `• ${suggestion}`;
+	  
+	  setFormState({
+	    ...formState,
+	    description: newDescription
+	  });
+	  
+	  // Optional: Provide visual feedback that the suggestion was applied
+	  const element = document.querySelector(`[data-suggestion-index="${index}"]`);
+	  if (element) {
+	    // Temporarily change background color to indicate selection
+	    const originalBackground = element.style.backgroundColor;
+	    element.style.backgroundColor = '#e6f7e6';
+	    
+	    setTimeout(() => {
+	      element.style.backgroundColor = originalBackground;
+	    }, 500);
+	  }
 	};
 
-	useEffect(
-		() => {
-			if (formState.current) {
-				setFormState({
-					...formState,
-					endDate: 'Present'
-				});
-			}
-		},
-		[ formState.current ]
-	);
+	useEffect(() => {
+		// Only update if current changed and is true
+		if (formState.current) {
+			setFormState(prevState => ({
+				...prevState,
+				endDate: 'Present'
+			}));
+		}
+		// The dependency here is just formState.current, which is fine
+	}, [formState.current]);
 
 	return (
 		<Modal open={props.open} onClose={props.onClose} closeOnOverlayClick={false} center>
@@ -165,9 +268,47 @@ const ExperienceModal = (props) => {
 							onChange={handleChange}
 						/>
 					</SmallFormGroup>
+					
+					<div style={{ marginBottom: '20px' }}>
+					  <AIButton 
+					    type="button"
+					    onClick={generateAchievements}
+					    disabled={isGenerating || !formState.title}
+					  >
+					    <AIIcon role="img" aria-label="AI">🧠</AIIcon>
+					    {isGenerating ? 'Generating...' : 'Suggest Achievements'}
+					  </AIButton>
+					</div>
+					
+					{suggestions.length > 0 && (
+					  <div style={{ marginBottom: '20px' }}>
+					    <AISectionTitle>
+					      <AIIcon role="img" aria-label="Achievements">🏆</AIIcon>
+					      Achievement Suggestions
+					    </AISectionTitle>
+					    <p style={{ marginBottom: '10px', fontSize: '14px' }}>
+					      Click on any suggestion to add it to your job description:
+					    </p>
+					    {suggestions.map((suggestion, index) => (
+					      <SuggestionCard 
+					        key={index} 
+					        onClick={(e) => {
+					          e.preventDefault();
+					          applySuggestion(suggestion, index);
+					        }}
+					        role="button"
+					        tabIndex={0}
+					        aria-label={`Apply suggestion: ${suggestion}`}
+					        data-suggestion-index={index}
+					      >
+					        <p>• {suggestion}</p>
+					      </SuggestionCard>
+					    ))}
+					  </div>
+					)}
 
 					<div style={{ textAlign: 'right' }}>
-						<Button>Submit</Button>
+						<Button type="submit">Submit</Button>
 					</div>
 				</form>
 			</ModalContent>
